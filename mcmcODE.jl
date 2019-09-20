@@ -2,7 +2,7 @@
 function mcmcODE(prob::DiffEqBase.DEProblem,alg,t,data,priors,parVary,parVaryIdx;
   likelihood = (μ,σ) -> MvNormal(μ,σ*ones(length(μ))),
   num_samples=1000,
-  sampler = Turing.NUTS(num_samples,0.65)) #0.65 is the desired acceptance ratio
+  sampler = Turing.HMCDA(num_samples, 200, 0.65, 0.3)) #0.65 is the desired acceptance ratio
 
   modelFramework(varInfo,sampler,model) = begin
 

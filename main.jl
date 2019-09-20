@@ -168,10 +168,10 @@ parChange = NamedTuple{parVary}(parVaryIdx)
 ###############################################################
 
 #Provide any prior knownledge for the parameters
-priors = fill(Uniform(0,1),parNum)
+priors = fill(Uniform(0,1e3),parNum)
 
 #include("mcmcODE.jl")
-result = mcmcODE(prob,alg,timePoints,experiments,priors,parVary,parVaryIdx;num_samples=1000)
+result = mcmcODE(prob,alg,timePoints,experiments,priors,parVary,parVaryIdx;num_samples=1e5)
 
 ###############################################################
                 # 5. Postprocessing & Plotting
