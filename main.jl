@@ -104,7 +104,7 @@ data = CSV.read("NormData.csv",missingstring = "-")
 #Two seperate error functions are used, one comparing normalized simulations and data, and the other comparing desired peaks (max/min)
 
 #Define desired peaks
-desiredScale = m2c([0.8*1e3,eps(),0.8*1e3, 1e5, 0.8*1e4,100.0,1e5,1e4,
+desiredScale = m2c([0.8*1e3,eps(),0.8*1e3, 1e5, 3e3,100.0,1e5,1e4,
                     30.0,30.0,30.0,1e4,1e4])
 
 #Transform dataframe into Array of Arrays
@@ -145,6 +145,13 @@ function Observables(sol,intConditions,dataIndex,t)
   return obversedSpecies
 end
 
+function heuristic(sol,desiredScale)
+  peaksModel = maximum(sol[:,:],dims=2)
+  peaksModel[[1,3,5]] = minimum(sol[[1,3,5],:],dims=2)
+  h = @. (1.0-peaksModel/desiredScale)^2
+  h[2] = 0.0
+  return sum(h)
+end
 #What parameters are we changing?
 #Need to pass the parameter values and the indicies of the parameters you want to change
 parVary = (:k1f, :k1r, :k3f, :k3r, :k4f, :kcat5, :Km5, :k5r, :kcat6, :Km6, :k11f, :k13f, :kcat2, :Km2, :τ7, :kcat7, :Km7, :kcat8, :Km8, :k8f, :k9f, :k10f1, :k10f2, :k12f, :k6f)
@@ -163,23 +170,56 @@ parChange = NamedTuple{parVary}(parVaryIdx)
 #Provide any prior knownledge for the parameters
 priors = fill(Uniform(0,1),parNum)
 
-include("mcmcODE.jl")
+#include("mcmcODE.jl")
 result = mcmcODE(prob,alg,timePoints,experiments,priors,parVary,parVaryIdx;num_samples=1000)
 
+###############################################################
+                # 5. Postprocessing & Plotting
+###############################################################
 
-describe(result)
+#Summary of the MCMC results
+#describe(result)
 
+#Save the parameter chains and information about the MCMC run
 chainParameters = DataFrame(result,:parameters)
-chainInternals = DataFrame(result,:internals)
+CSV.write("Parameters.csv",chainParameters)
 
+chainInternals = DataFrame(result,:internals)
+CSV.write("Internals.csv",chainInternals)
+
+
+#Make a plot of the chains
 chainsPlot = plot(result)
 savefig(chainsPlot,"ChainsODE.pdf")
 
 
-#Plot of the data and dynamics
-t = range(tspan[1],tspan[2],length=100)
-newProb = remake(prob, p=newp)
+#Plot the data against the simulation
 
+dataPlots = Vector(undef,length(dataIndex))
+#loop through the data
+for (i,protein) in enumerate(names(data)[3:end])
+  dataPlots[i] = @df data plot(:Time,data[!,protein].*desiredScale[dataIndex[i]],
+                 group=:Experiment,title=protein,markershape=:auto)
+end
+
+plot(dataPlots...,legend=false)
+
+
+#Get the best parameter through the lowest log Posterior
+bestPar = copy(p)
+bestParIdx = argmax(chainInternals.lp)
+
+#Why are the parameters out of order, why do you hate my Turing.jl?
+for par in names(chainParameters)
+  if par ∈ pNames
+  bestPar[findfirst(x-> x==par,pNames)] = chainParameters[bestParIdx,par]
+  end
+end
+
+newProb = remake(prob, p=bestPar)
+newSol = solve(newProb,alg)
+
+t = range(tspan[1],tspan[2],length=100)
 obs = Observables(sol,intConditions,dataIndex,t)
 
-plot(obs',layout=length(dataIndex),legend=false,framestyle=:box)
+plot!(t,obs',layout=length(dataIndex),legend=false,framestyle=:box)

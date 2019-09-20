@@ -73,6 +73,9 @@ function mcmcODE(prob::DiffEqBase.DEProblem,alg,t,data,priors,parVary,parVaryIdx
     end #successful integration
   end #experiments
 
+#Heuristics
+varInfo.logp += heuristic(sol,desiredScale)
+
     return varInfo
 
   end #Model
