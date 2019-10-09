@@ -167,11 +167,11 @@ parChange = NamedTuple{parVary}(parVaryIdx)
                     # 4. Run the MCMC algorithm
 ###############################################################
 
-#Provide any prior knownledge for the parameters
-priors = fill(Uniform(0,1e3),parNum)
+#Provide any prior knowledge for the parameters
+priors = fill(Uniform(0.0,1.0),parNum)
 
 #include("mcmcODE.jl")
-result = mcmcODE(prob,alg,timePoints,experiments,priors,parVary,parVaryIdx;num_samples=1e5)
+result = mcmcODE(prob,alg,timePoints,experiments,priors,parVary,parVaryIdx;num_samples=10_000)
 
 ###############################################################
                 # 5. Postprocessing & Plotting
