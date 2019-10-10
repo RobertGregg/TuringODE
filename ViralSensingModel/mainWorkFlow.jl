@@ -4,8 +4,9 @@ using Turing,Distributions #Running statistics on MCMC
 using CSV, DataFrames #Handle the data
 using StatsPlots,ProgressMeter #Plotting and Monitoring
 
-include("HelperFunctions.jl")
-include("MCMCRun.jl")
+#Not sure why but include assumes you're in same folder as file(?)
+include("../HelperFunctions.jl")
+include("../MCMCRun.jl")
 
 #General workflow for MCMC parameter fitting
 
@@ -114,7 +115,9 @@ alg = Vern7()  #ODE solver
 
 #This is just me testing the ODEs
 sol = solve(prob,alg)
-plot(sol,layout=10,legend=false)
+plot(sol,layout=varNum,legend=false, framestyle=:box,
+     title=[v for j = 1:1, v in varNames])
+ xlabel!("")
 
 ###############################################################
                     # 2. Import the data
