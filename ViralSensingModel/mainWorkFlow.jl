@@ -21,50 +21,63 @@ include("MCMCRun.jl")
 ###############################################################
                     # 1. Set up the ODE
 ###############################################################
+#Some Model Information needed for MCMC
+parNames = [:k12, :k13,:k14,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc, :Kad]
+varNames = ["IFN","IFNenv","STAT1","STATP2n","IRF7","IRF7Pn","Target","Eclipse","Productive","Virus"]
+#Set the number of parameters and states
+parNum = length(parNames)
+varNum = length(varNames)
+
+## Define any constants for the model
+const k11 = 0.0
+const n=3
+const TJtot = 0.0001
+#Can be defined here or just as a number in the equations
+
 
 function Model!(dy,y,par,t)
   #IFN, ODE 1 parameters
-  k11=0 #PR8, RIGI is assumed antagonized
-  k12=par[2]
-  n=3
-  k13=par[3]
-  k14=par[4]
-  tau1=par[22]
+  #k11=0 #PR8, RIGI is assumed antagonized
+  k12=par[1]
+  #n=3
+  k13=par[2]
+  k14=par[3]
+  tau1=par[21]
   #IFN_env, ODE 2 parameters
-  k21=par[5]
-  tau2=par[23]
+  k21=par[4]
+  tau2=par[22]
   #STAT, ODE 3 parameters
-  r31=par[6]
-  k31=par[7]
-  tau3=par[24]
+  r31=par[5]
+  k31=par[6]
+  tau3=par[23]
   #STATP, ODE 4 parameters
-  k41=par[8]
-  k42=par[9]
-  tau4=par[25]
+  k41=par[7]
+  k42=par[8]
+  tau4=par[24]
   #IRF7, ODE 5 parameters
-  k51=par[10]
-  k52=par[11]
-  tau5=par[26]
+  k51=par[9]
+  k52=par[10]
+  tau5=par[25]
   #IRF7P, ODE 6 parameters
-  k61=par[12]
-  tau6=par[27]
+  k61=par[11]
+  tau6=par[26]
   #Target cells, ODE 7 paramters
-  k71=par[13]
+  k71=par[12]
   #Eclipse infected cells, ODE 8 parameters
-  k81=par[14]
-  k82=par[15]
+  k81=par[13]
+  k82=par[14]
   #Productive infected cells, ODE 9 parameters
-  k91=par[16]
+  k91=par[15]
   #Viral count, ODE 10 parameters
-  k10_1=par[17]
-  k10_2=par[18]
-  k10_3=par[19]
+  k10_1=par[16]
+  k10_2=par[17]
+  k10_3=par[18]
   #TJ Constants
   #TJ describes the binding of IFN and SOCS feedback
-  TJtot=0.0001
-  k11_1=par[20]
-  k11_2=par[21]
-  TJ=TJtot*(y[2]/(k11_1+y[2])*(1/(1+k11_2))); #Eq. 11
+  #TJtot=0.0001
+  k11_1=par[19]
+  k11_2=par[20]
+  TJ=TJtot*(y[2]/(k11_1+y[2])*(1.0/(1.0+k11_2))) #Eq. 11
 
   #ODE System
   v=y[10]/(10^4) #scale virus effects
