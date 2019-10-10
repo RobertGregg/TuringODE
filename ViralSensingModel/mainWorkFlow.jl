@@ -1,5 +1,4 @@
 #Importing Neccessary Packages
-#test change
 using DifferentialEquations,ModelingToolkit #Solving ODEs
 using Turing,Distributions #Running statistics on MCMC
 using CSV, DataFrames #Handle the data
@@ -21,8 +20,20 @@ include("MCMCRun.jl")
 ###############################################################
                     # 1. Set up the ODE
 ###############################################################
-#Some Model Information needed for MCMC
-parNames = [:k12, :k13,:k14,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc,:Kbc, :Kad]
+#Some Model Information needed for MCMC (parameters and States)
+parNames = [:k12, :k13,:k14,
+            :k21,
+            :r31,:k31,
+            :k41,:k42,
+            :k51,:k52,
+            :k61,
+            :k71,
+            :k81,:k82,
+            :k91,
+            :k10_1,:k10_2,:k10_3,
+            :k11_1,:k11_2,
+            :tau1,:tau2,:tau3,:tau4,:tau5,:tau6]
+
 varNames = ["IFN","IFNenv","STAT1","STATP2n","IRF7","IRF7Pn","Target","Eclipse","Productive","Virus"]
 #Set the number of parameters and states
 parNum = length(parNames)
