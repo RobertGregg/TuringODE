@@ -7,6 +7,8 @@ using StatsPlots,ProgressMeter #Plotting and Monitoring
 include("HelperFunctions.jl")
 include("MCMCRun.jl")
 
+cd("./UserFriendly") #Change this to your model's folder
+
 #General workflow for MCMC parameter fitting
 
 #=
@@ -58,7 +60,7 @@ alg = Vern7() #ODE solver
 ###############################################################
 
 #Read in the CSV
-data = CSV.read("./UserFriendly/VVdata.csv")
+data = CSV.read("./VVdata.csv")
 
 #Convert the data into a workable form
 dataTransform = ConvertData(data)
@@ -94,10 +96,10 @@ result = MCMCRun(sampleProblem)
 
 #Save the parameter chains and information about the MCMC run
 chainParameters = DataFrame(result,:parameters)
-CSV.write("./UserFriendly/Parameters.csv",chainParameters)
+CSV.write("./Parameters.csv",chainParameters)
 
 chainInternals = DataFrame(result,:internals)
-CSV.write("./UserFriendly/Internals.csv",chainInternals)
+CSV.write("./Internals.csv",chainInternals)
 ###############################################################
                     # 5. Postprocessing
 ###############################################################
@@ -107,19 +109,19 @@ parTure = [0.833, 1.667, 0.167] #Parameter values
 
 #Make a plot of the chains and density plots
 chainsPlot = plot(result)
-savefig(chainsPlot,"./UserFriendly/ChainsODE.pdf")
+savefig(chainsPlot,"./ChainsODE.pdf")
 
 #Corner plot for correlations
 corPlot = autocorplot(result)
-savefig(corPlot,"./UserFriendly/AutoCorr.pdf")
+savefig(corPlot,"./AutoCorr.pdf")
 
 #Running average Plot
 runAvePlot = meanplot(result)
-savefig(runAvePlot,"./UserFriendly/RunAve.pdf")
+savefig(runAvePlot,"./RunAve.pdf")
 
 #Running average Plot
 cornerPlot = corner(result)
-savefig(cornerPlot,"./UserFriendly/Corner.pdf")
+savefig(cornerPlot,"./Corner.pdf")
 
 
 
@@ -135,4 +137,4 @@ newProb = remake(prob, p=bestPar)
 newSol = solve(newProb,alg)
 
 plot!(newSol,layout=4)
-savefig("./UserFriendly/DataFit.pdf")
+savefig("./DataFit.pdf")
