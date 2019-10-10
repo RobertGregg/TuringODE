@@ -50,7 +50,6 @@ function Model!(dy,y,par,t)
   #IFN, ODE 1 parameters
   #k11=0 #PR8, RIGI is assumed antagonized
   k12=par[1]
-  #n=3
   k13=par[2]
   k14=par[3]
   tau1=par[21]
@@ -85,7 +84,6 @@ function Model!(dy,y,par,t)
   k10_3=par[18]
   #TJ Constants
   #TJ describes the binding of IFN and SOCS feedback
-  #TJtot=0.0001
   k11_1=par[19]
   k11_2=par[20]
   TJ=TJtot*(y[2]/(k11_1+y[2])*(1.0/(1.0+k11_2))) #Eq. 11
@@ -109,7 +107,11 @@ end
 ###############################################################
                     # 2. Import the data
 ###############################################################
+#Read in the CSV
+data = CSV.read("./ViralSensingModel/PR8.csv")
 
+#Convert the data into a workable form
+dataTransform = ConvertData(data)
 
 
 ###############################################################
