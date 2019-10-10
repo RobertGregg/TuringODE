@@ -45,7 +45,6 @@ const n=3
 const TJtot = 0.0001
 #Can be defined here or just as a number in the equations
 
-
 function Model!(dy,y,par,t)
   #IFN, ODE 1 parameters
   #k11=0 #PR8, RIGI is assumed antagonized
@@ -105,6 +104,19 @@ function Model!(dy,y,par,t)
   dy[10]=(k10_1*y[9])/(1+k10_2*y[2])-k10_3*y[10] #Virus count
 
 end
+
+#Define information for ODE model
+p=rand(parNum) #Parameter values
+u0 = [7.94, 0, 262.3, 12.2, 14.15, 0, 0, 250000, 0, 7.5E-2] #Initial Conditions
+tspan = (0.25,24.0) #Time (start, end)
+
+#Contruct the ODE Problem
+prob = ODEProblem(Model!,u0,tspan,p)
+alg = Vern7()  #ODE solver
+
+#This is just me testing the ODEs
+sol = solve(prob,alg)
+plot(sol,layout=10,legend=false)
 
 ###############################################################
                     # 2. Import the data
