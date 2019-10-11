@@ -44,14 +44,13 @@ modelFramework(varInfo,sampler,model) = begin
       #println(newp) #what were the bad pars?
       varInfo.logp -= Inf
     else
-      #What states are being measured?
-      measured = @. !ismissing(data[1,:])
-
       #Loop through time
       for (idx,t) in enumerate(times)
         #What are their concentrations?
-        allObs = ObserveTransform(sol,t)
-        obs = allObs[measured]
+          allObs = ObserveTransform(sol,t)
+        #What states are being measured?
+          measured = @. !ismissing(data[idx,:])
+          obs = allObs[measured]
         #Update the likelihood with each measurement
         logp = Turing.observe(
           sampler,
