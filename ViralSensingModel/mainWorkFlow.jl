@@ -41,6 +41,7 @@ varNames = ["IFN","IFNenv","STAT1","STATP2n","IRF7","IRF7Pn","Target","Eclipse",
 #Set the number of parameters and states
 parNum = length(parNames)
 varNum = length(varNames)
+modelInfo = ModelInformation(parNames,varNames)
 
 ## Define any constants for the model
 const k11 = 0.0
@@ -113,19 +114,20 @@ tspan = (0.25,24.0) #Time (start, end)
 
 #Contruct the ODE Problem
 prob = ODEProblem(Model!,u0,tspan,p)
-alg = Vern7()  #ODE solver
+alg = Rodas5()  #ODE solver
 
 #This is just me testing the ODEs
 sol = solve(prob,alg)
-plot(sol,layout=varNum,legend=false, framestyle=:box,
-     title=[v for j = 1:1, v in varNames])
- xlabel!("")
+plot(sol,layout=varNum,legend=false, framestyle=:box,title=[v for i=1:1, v in varNames])
+xlabel!("")
 
 ###############################################################
                     # 2. Import the data
 ###############################################################
 #Read in the CSV
-data = CSV.read("./PR8.csv")
+data = CSV.read("./Data/PR8.csv", missingstring= "-")
+
+control = CSV.read("./Data/Control.csv", missingstring= "-")
 
 #Convert the data into a workable form
 dataTransform = ConvertData(data)
@@ -135,6 +137,34 @@ dataTransform = ConvertData(data)
         # 3. Transform the ODE output to match the data
 ###############################################################
 
+#What states are being measured?
+const allMeasuredStates = [1,3,4,5,10] #IFN, STAT, STATp, IRF7, Virus
+
+#This function takes in the solved ODE, and outputs the observable species
+function ObserveTransform(sol,measuredTime,currentStates)
+  #Create a container to hold the solution at the desired time points
+  #Get indices of currently measured states
+  measuredIdx = allMeasuredStates[currentStates]
+  obversedSpecies = sol(measuredTime)[measuredIdx]
+
+  #Create a vector of control data
+  timeFilter = x->x==measuredTime
+
+if 10 ∉ measuredIdx #if not virus
+  #Get the control values and calculate a lfc
+  controlVec = convert(Vector,control[findfirst(timeFilter,control.Time),3:end])
+  obversedSpecies = @. log2(max(obversedSpecies,0.0)+1.0) - log2(controlVec)
+
+elseif 10 ∈ measuredIdx && length(measuredIdx)==1 #Only Virus measured
+  obversedSpecies = obversedSpecies
+else #Both virus and species are measured
+  #Get the control values and calculate a lfc, but skip the virus
+  controlVec = convert(Vector,control[findfirst(timeFilter,control.Time),3:end])
+  obversedSpecies[1:end-1] = @. log2(max(obversedSpecies[1:end-1],0.0)+1.0) - log2(controlVec)
+end
+
+  return obversedSpecies
+end
 
 ###############################################################
                     # 4. Run the MCMC algorithm
@@ -142,9 +172,10 @@ dataTransform = ConvertData(data)
 
 #Provide any prior knowledge for the parameters
 priors = fill(FlatPos(0.0),length(prob.p))
+#priors = fill(Uniform(0.0,100.0),length(prob.p))
 
 #How many MCMC sample do you want
-mcmcSamples = 100_000
+mcmcSamples = 10_000
 
 #Gather all the information to one structure
 sampleProblem = MCMCSetup(modelInfo,prob,alg,dataTransform,mcmcSamples,priors)
@@ -161,9 +192,6 @@ CSV.write("./Internals.csv",chainInternals)
 ###############################################################
                     # 5. Postprocessing
 ###############################################################
-
-#True parameter values
-parTure = [0.833, 1.667, 0.167] #Parameter values
 
 #Make a plot of the chains and density plots
 chainsPlot = plot(result)
@@ -184,7 +212,8 @@ savefig(cornerPlot,"./Corner.pdf")
 
 
 #Create a plot fitting "best" parameter values
-@df data plot(:Time,[:A,:B,:C,:D],markershape=:auto,layout=4,legend=false)
+@df data plot(:Time,[:IFN,:STAT,:STATP,:IRF7,:Virus],markershape=:auto,
+              layout=length(allMeasuredStates),legend=false)
 
 #Retrieve the chains and information about the chains
 #Get best parameter set
@@ -194,5 +223,9 @@ bestPar = BestParSet(result,parNames) #ignore the std
 newProb = remake(prob, p=bestPar)
 newSol = solve(newProb,alg)
 
-plot!(newSol,layout=4)
+plot!(newSol,vars=allMeasuredStates,layout=length(allMeasuredStates))
 savefig("./DataFit.pdf")
+
+
+plot(newSol,layout=varNum,legend=false, framestyle=:box,title=[v for i=1:1, v in varNames])
+xlabel!("")

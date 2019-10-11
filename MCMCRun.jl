@@ -46,11 +46,10 @@ modelFramework(varInfo,sampler,model) = begin
     else
       #Loop through time
       for (idx,t) in enumerate(times)
-        #What are their concentrations?
-          allObs = ObserveTransform(sol,t)
         #What states are being measured?
           measured = @. !ismissing(data[idx,:])
-          obs = allObs[measured]
+        #What are their concentrations?
+          obs = ObserveTransform(sol,t,measured)
         #Update the likelihood with each measurement
         logp = Turing.observe(
           sampler,

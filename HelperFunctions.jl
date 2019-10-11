@@ -1,8 +1,8 @@
 #This is a structure that hold all of the information needed about the Model
 
 mutable struct ModelInformation
-  Parameters::Array{Symbol,1}
-  States::Array{Symbol,1}
+  Parameters::Array{Union{Symbol,String},1}
+  States::Array{Union{Symbol,String},1}
 end
 
 mutable struct MCMCSetup
