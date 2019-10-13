@@ -223,7 +223,23 @@ bestPar = BestParSet(result,parNames) #ignore the std
 newProb = remake(prob, p=bestPar)
 newSol = solve(newProb,alg)
 
-plot!(newSol,vars=allMeasuredStates,layout=length(allMeasuredStates))
+plotBestSol = zeros(length(newSol.t),varNum)
+controlLFC = log2.(mean(convert(Matrix,control[:,3:end]),dims=1))
+
+for t=1:length(newSol.t)
+  for s = 1:varNum
+    if s ∈ allMeasuredStates[1:end-1]
+      idx = findfirst(x->x==s,allMeasuredStates)
+      @show s,t,idx
+      plotBestSol[t,s] = log2(max(newSol[s,t],0.0)+1.0) - controlLFC[idx]
+    else
+      plotBestSol[t,s] = newSol[s,t]
+    end
+  end
+end
+
+plot!(newSol.t,plotBestSol[:,allMeasuredStates],layout=length(allMeasuredStates),legend=false,title=[v for i=1:1, v in varNames[allMeasuredStates]])
+#plot!(newSol,vars=allMeasuredStates,layout=length(allMeasuredStates))
 savefig("./DataFit.pdf")
 
 
