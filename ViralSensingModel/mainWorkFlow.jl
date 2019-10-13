@@ -217,13 +217,31 @@ savefig(cornerPlot,"./Corner.pdf")
 
 #Retrieve the chains and information about the chains
 #Get best parameter set
-bestPar = BestParSet(result,parNames) #ignore the std
+#bestPar = BestParSet(result,parNames) #ignore the std
+bestPar = [192.7725258,	15.25407858, 950.0908601, 431.1041522, 939.0238243, 184.173022, 633.626886, 969.1597922, 936.9110282, 634.9746146, 762.1825937, 397.3541688, 639.2790192, 596.238088, 0.02749341, 607.5415559, 1.309145917, 0.179619783, 907.8286132, 770.9273801, 452.5879523, 449.4571297, 133.6798915, 0.769182583, 991.2202612, 505.7234537]
+
 
 #Rerun the problem with these parameters
 newProb = remake(prob, p=bestPar)
 newSol = solve(newProb,alg)
 
-plot!(newSol,vars=allMeasuredStates,layout=length(allMeasuredStates))
+plotBestSol = zeros(length(newSol.t),varNum)
+controlLFC = log2.(mean(convert(Matrix,control[:,3:end]),dims=1))
+
+for t=1:length(newSol.t)
+  for s = 1:varNum
+    if s ∈ allMeasuredStates[1:end-1]
+      idx = findfirst(x->x==s,allMeasuredStates)
+      @show s,t,idx
+      plotBestSol[t,s] = log2(max(newSol[s,t],0.0)+1.0) - controlLFC[idx]
+    else
+      plotBestSol[t,s] = newSol[s,t]
+    end
+  end
+end
+
+plot!(newSol.t,plotBestSol[:,allMeasuredStates],layout=length(allMeasuredStates),legend=false,title=[v for i=1:1, v in varNames[allMeasuredStates]])
+#plot!(newSol,vars=allMeasuredStates,layout=length(allMeasuredStates))
 savefig("./DataFit.pdf")
 
 
