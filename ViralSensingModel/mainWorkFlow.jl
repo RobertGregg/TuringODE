@@ -129,6 +129,12 @@ xlabel!("")
 #Read in the CSV
 data = CSV.read("./Data/PR8.csv", missingstring= "-")
 
+#What if we normalize the virus?
+vMin = 7.5E-2 #Initial Condition
+vMax = maximum(skipmissing(data.Virus))
+virusNorm(x) = @. (x - vMin)/(vMax - vMin)
+data.Virus = virusNorm(data.Virus)
+
 control = CSV.read("./Data/Control.csv", missingstring= "-")
 
 #Convert the data into a workable form
