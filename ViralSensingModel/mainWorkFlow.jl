@@ -8,7 +8,9 @@ using StatsPlots,ProgressMeter #Plotting and Monitoring
 include("../HelperFunctions.jl")
 include("../MCMCRun.jl")
 
-cd("./ViralSensingModel")
+if "ViralSensingModel" ∈ readdir()
+	cd("./ViralSensingModel")
+end
 
 #General workflow for MCMC parameter fitting
 
@@ -171,11 +173,11 @@ end
 ###############################################################
 
 #Provide any prior knowledge for the parameters
-priors = fill(FlatPos(0.0),length(prob.p))
-#priors = fill(Uniform(0.0,100.0),length(prob.p))
+#priors = fill(FlatPos(0.0),length(prob.p))
+priors = fill(Uniform(0.0,1000.0),length(prob.p))
 
 #How many MCMC sample do you want
-mcmcSamples = 10_000
+mcmcSamples = 1_000_000
 
 #Gather all the information to one structure
 sampleProblem = MCMCSetup(modelInfo,prob,alg,dataTransform,mcmcSamples,priors)
@@ -195,19 +197,19 @@ CSV.write("./Internals.csv",chainInternals)
 
 #Make a plot of the chains and density plots
 chainsPlot = plot(result)
-savefig(chainsPlot,"./ChainsODE.pdf")
+savefig(chainsPlot,"./Figures/ChainsODE.pdf")
 
 #Corner plot for correlations
 corPlot = autocorplot(result)
-savefig(corPlot,"./AutoCorr.pdf")
+savefig(corPlot,"./Figures/AutoCorr.pdf")
 
 #Running average Plot
 runAvePlot = meanplot(result)
-savefig(runAvePlot,"./RunAve.pdf")
+savefig(runAvePlot,"./Figures/RunAve.pdf")
 
 #Running average Plot
-cornerPlot = corner(result)
-savefig(cornerPlot,"./Corner.pdf")
+#cornerPlot = corner(result)
+#savefig(cornerPlot,"./Figures/Corner.pdf")
 
 
 
@@ -217,8 +219,7 @@ savefig(cornerPlot,"./Corner.pdf")
 
 #Retrieve the chains and information about the chains
 #Get best parameter set
-#bestPar = BestParSet(result,parNames) #ignore the std
-bestPar = [192.7725258,	15.25407858, 950.0908601, 431.1041522, 939.0238243, 184.173022, 633.626886, 969.1597922, 936.9110282, 634.9746146, 762.1825937, 397.3541688, 639.2790192, 596.238088, 0.02749341, 607.5415559, 1.309145917, 0.179619783, 907.8286132, 770.9273801, 452.5879523, 449.4571297, 133.6798915, 0.769182583, 991.2202612, 505.7234537]
+bestPar = BestParSet(result,parNames) #ignore the std
 
 
 #Rerun the problem with these parameters
@@ -242,8 +243,9 @@ end
 
 plot!(newSol.t,plotBestSol[:,allMeasuredStates],layout=length(allMeasuredStates),legend=false,title=[v for i=1:1, v in varNames[allMeasuredStates]])
 #plot!(newSol,vars=allMeasuredStates,layout=length(allMeasuredStates))
-savefig("./DataFit.pdf")
+savefig("./Figures/DataFit.pdf")
 
 
 plot(newSol,layout=varNum,legend=false, framestyle=:box,title=[v for i=1:1, v in varNames])
 xlabel!("")
+savefig("./Figures/AllODEs.pdf")
