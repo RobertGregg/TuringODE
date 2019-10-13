@@ -217,7 +217,9 @@ savefig(cornerPlot,"./Corner.pdf")
 
 #Retrieve the chains and information about the chains
 #Get best parameter set
-bestPar = BestParSet(result,parNames) #ignore the std
+#bestPar = BestParSet(result,parNames) #ignore the std
+bestPar = [192.7725258,	15.25407858, 950.0908601, 431.1041522, 939.0238243, 184.173022, 633.626886, 969.1597922, 936.9110282, 634.9746146, 762.1825937, 397.3541688, 639.2790192, 596.238088, 0.02749341, 607.5415559, 1.309145917, 0.179619783, 907.8286132, 770.9273801, 452.5879523, 449.4571297, 133.6798915, 0.769182583, 991.2202612, 505.7234537]
+
 
 #Rerun the problem with these parameters
 newProb = remake(prob, p=bestPar)
