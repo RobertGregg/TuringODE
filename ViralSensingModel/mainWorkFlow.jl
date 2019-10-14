@@ -105,7 +105,7 @@ function Model!(dy,y,par,t)
   dy[7]=-k71*y[7]*y[10] #Uninfected target cells
   dy[8]=k71*y[7]*y[10]-(k81*i1)/(1+k82*y[2]) #Eclipse infected cells
   dy[9]=(k81*i1)/(1+k82*y[2])-k91*y[9] #Productive infected cells
-  dy[10]=(k10_1*y[9])/(1+k10_2*y[2])-k10_3*y[10] #Virus count
+  dy[10]=(k10_1*y[9]*y[10]^k10_2)/(y[2]+y[10]^k10_2)-k10_3*y[10] #Virus count
 
 end
 
@@ -183,7 +183,7 @@ end
 priors = fill(Uniform(0.0,1000.0),length(prob.p))
 
 #How many MCMC sample do you want
-mcmcSamples = 1_000_000
+mcmcSamples = 1000
 
 #Gather all the information to one structure
 sampleProblem = MCMCSetup(modelInfo,prob,alg,dataTransform,mcmcSamples,priors)
