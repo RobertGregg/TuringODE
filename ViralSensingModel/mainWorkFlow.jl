@@ -31,13 +31,12 @@ parNames = [:k12, :k13,:k14,
             :r31,:k31,
             :k41,:k42,
             :k51,:k52,
-            :k61,
+            :k61,:tau6,
             :k71,
             :k81,:k82,
             :k91,
-            :k10_1,:k10_2,:k10_3,
-            :k11_1,:k11_2,
-            :tau1,:tau2,:tau3,:tau4,:tau5,:tau6]
+            :k10_1,:k10_2,
+            :k11_1,:k11_2]
 
 varNames = ["IFN","IFNenv","STAT1","STATP2n","IRF7","IRF7Pn","Target","Eclipse","Productive","Virus"]
 #Set the number of parameters and states
@@ -49,6 +48,11 @@ modelInfo = ModelInformation(parNames,varNames)
 const k11 = 0.0
 const n=3
 const TJtot = 0.0001
+const tau1 = 0.3
+const tau2 = 0.3
+const tau3 = 0.7
+const tau4 = 1.2
+const tau5 = 0.7
 #Can be defined here or just as a number in the equations
 
 function Model!(dy,y,par,t)
@@ -57,36 +61,30 @@ function Model!(dy,y,par,t)
   k12=par[1]
   k13=par[2]
   k14=par[3]
-  tau1=par[21]
   #IFN_env, ODE 2 parameters
   k21=par[4]
-  tau2=par[22]
   #STAT, ODE 3 parameters
   r31=par[5]
   k31=par[6]
-  tau3=par[23]
   #STATP, ODE 4 parameters
   k41=par[7]
   k42=par[8]
-  tau4=par[24]
   #IRF7, ODE 5 parameters
   k51=par[9]
   k52=par[10]
-  tau5=par[25]
   #IRF7P, ODE 6 parameters
   k61=par[11]
-  tau6=par[26]
+  tau6=par[12]
   #Target cells, ODE 7 paramters
-  k71=par[12]
+  k71=par[13]
   #Eclipse infected cells, ODE 8 parameters
-  k81=par[13]
-  k82=par[14]
+  k81=par[14]
+  k82=par[15]
   #Productive infected cells, ODE 9 parameters
-  k91=par[15]
+  k91=par[16]
   #Viral count, ODE 10 parameters
-  k10_1=par[16]
-  k10_2=par[17]
-  k10_3=par[18]
+  k10_1=par[17]
+  k10_2=par[18]
   #TJ Constants
   #TJ describes the binding of IFN and SOCS feedback
   k11_1=par[19]
@@ -105,7 +103,7 @@ function Model!(dy,y,par,t)
   dy[7]=-k71*y[7]*y[10] #Uninfected target cells
   dy[8]=k71*y[7]*y[10]-(k81*i1)/(1+k82*y[2]) #Eclipse infected cells
   dy[9]=(k81*i1)/(1+k82*y[2])-k91*y[9] #Productive infected cells
-  dy[10]=(k10_1*y[9]*y[10]^k10_2)/(y[2]+y[10]^k10_2)-k10_3*y[10] #Virus count
+  dy[10]=(k10_1*y[9]*v^n)/(y[2]*v^n)-k10_2*y[10] #Virus count
 
 end
 
@@ -120,8 +118,8 @@ alg = Rodas5()  #ODE solver
 
 #This is just me testing the ODEs
 sol = solve(prob,alg)
-plot(sol,layout=varNum,legend=false, framestyle=:box,title=[v for i=1:1, v in varNames])
-xlabel!("")
+#plot(sol,layout=varNum,legend=false, framestyle=:box,title=[v for i=1:1, v in varNames])
+#xlabel!("")
 
 ###############################################################
                     # 2. Import the data
