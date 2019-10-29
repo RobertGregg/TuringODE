@@ -150,7 +150,7 @@ elseif 7 ∈ measuredIdx && length(measuredIdx)==1 #Only Virus measured
 else #Both virus and species are measured
   #Get the control values and calculate a lfc, but skip the virus
   controlVec = convert(Vector,control[findfirst(timeFilter,control.Time),3:end])
-  obversedSpecies[1:end-1] = @. log2(max(obversedSpecies[1:end-1],0.0)+1.0) - log2(controlVec)
+  obversedSpecies[1:end-1] = @. log2(maximum(obversedSpecies[1:end-1],0.0)+1.0) - log2(controlVec)
 end
 
   return obversedSpecies
