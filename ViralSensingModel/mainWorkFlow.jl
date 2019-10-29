@@ -167,7 +167,7 @@ priors[5]=Uniform(0,10) #tau2, IFNe degradation
 priors[11]=Uniform(0,1) #k61 Infected cell clearance
 priors[13]=Uniform(0,1) #k72, viral clearance
 #How many MCMC sample do you want
-mcmcSamples = 1000
+mcmcSamples = 10
 
 #Gather all the information to one structure
 sampleProblem = MCMCSetup(modelInfo,prob,alg,dataTransform,mcmcSamples,priors)
@@ -190,8 +190,8 @@ chainsPlot = plot(result)
 savefig(chainsPlot,"./Figures/ChainsODE.pdf")
 
 #Corner plot for correlations
-corPlot = autocorplot(result)
-savefig(corPlot,"./Figures/AutoCorr.pdf")
+#corPlot = autocorplot(result)
+#savefig(corPlot,"./Figures/AutoCorr.pdf")
 
 #Running average Plot
 runAvePlot = meanplot(result)
@@ -223,7 +223,7 @@ for t=1:length(newSol.t)
   for s = 1:varNum
     if s ∈ allMeasuredStates[1:end-1]
       idx = findfirst(x->x==s,allMeasuredStates)
-      @show s,t,idx
+      #@show s,t,idx
       plotBestSol[t,s] = log2(max(newSol[s,t],0.0)+1.0) - controlLFC[idx]
     else
       plotBestSol[t,s] = newSol[s,t]
