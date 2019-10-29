@@ -8,9 +8,10 @@ using StatsPlots,ProgressMeter #Plotting and Monitoring
 include("../HelperFunctions.jl")
 include("../MCMCRun.jl")
 
-if "ViralSensingModel" ∈ readdir()
-	cd("./ViralSensingModel")
+if pwd()!="C:\\Users\\Portable\\Documents\\GitHub\\TuringODE\\ViralSensingModel"
+  cd("./ViralSensingModel")
 end
+
 
 #General workflow for MCMC parameter fitting
 
@@ -92,7 +93,7 @@ end
 
 #Define information for ODE model
 p=rand(parNum) #Parameter values
-u0 = [7.94, 0, 12.2, 14.15, 0, 250000, 7.5E-2] #Initial Conditions
+u0 = [7.94, 0.01, 12.2, 14.15, 0.01, 250000, 7.5E-2] #Initial Conditions
 tspan = (0.25,24.0) #Time (start, end)
 
 #Contruct the ODE Problem
@@ -108,7 +109,7 @@ xlabel!("")
                     # 2. Import the data
 ###############################################################
 #Read in the CSV
-data = CSV.read("./Data/PR8.csv", missingstring= "-")
+data = CSV.read("PR8.csv", missingstring= "-")
 
 #What if we normalize the virus?
 vMin = 7.5E-2 #Initial Condition
@@ -116,7 +117,7 @@ vMax = maximum(skipmissing(data.Virus))
 virusNorm(x) = @. (x - vMin)/(vMax - vMin)
 data.Virus = virusNorm(data.Virus)
 
-control = CSV.read("./Data/Control.csv", missingstring= "-")
+control = CSV.read("Control.csv", missingstring= "-")
 
 #Convert the data into a workable form
 dataTransform = ConvertData(data)
@@ -162,7 +163,9 @@ end
 #Provide any prior knowledge for the parameters
 #priors = fill(FlatPos(0.0),length(prob.p))
 priors = fill(Uniform(0.0,100.0),length(prob.p))
-
+priors[5]=Uniform(0,10) #tau2, IFNe degradation
+priors[11]=Uniform(0,1) #k61 Infected cell clearance
+priors[13]=Uniform(0,1) #k72, viral clearance
 #How many MCMC sample do you want
 mcmcSamples = 1000
 
