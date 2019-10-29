@@ -112,10 +112,10 @@ xlabel!("")
 data = CSV.read("PR8.csv", missingstring= "-")
 
 #What if we normalize the virus?
-vMin = 7.5E-2 #Initial Condition
-vMax = maximum(skipmissing(data.Virus))
-virusNorm(x) = @. (x - vMin)/(vMax - vMin)
-data.Virus = virusNorm(data.Virus)
+#vMin = 7.5E-2 #Initial Condition
+#vMax = maximum(skipmissing(data.Virus))
+#virusNorm(x) = @. (x - vMin)/(vMax - vMin)
+#data.Virus = virusNorm(data.Virus)
 
 control = CSV.read("Control.csv", missingstring= "-")
 
@@ -143,7 +143,7 @@ function ObserveTransform(sol,measuredTime,currentStates)
 if 7 ∉ measuredIdx #if not virus
   #Get the control values and calculate a lfc
   controlVec = convert(Vector,control[findfirst(timeFilter,control.Time),3:end])
-  obversedSpecies = @. log2(max(obversedSpecies,0.0)+1.0) - log2(controlVec)
+  obversedSpecies = @. log2(maximum(obversedSpecies,0.0)+1.0) - log2(controlVec)
 
 elseif 7 ∈ measuredIdx && length(measuredIdx)==1 #Only Virus measured
   obversedSpecies = obversedSpecies
