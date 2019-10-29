@@ -6,7 +6,8 @@ likelihood = (μ,σ) -> MvNormal(μ,σ*ones(length(μ)))
 #Choose an MCMC sampler
 sampler = Turing.NUTS(0.65) #0.65 is the desired acceptance ratio
 #Define all of the parameters
-parTuple = Problem.MI.Parameters[end]==:σ ? Tuple{(Problem.MI.Parameters...)} : Tuple{(push!(Problem.MI.Parameters,:σ))...} #Tack on the std
+getParNames = copy(Problem.MI.Parameters)
+parTuple = Tuple{(push!(getParNames,:σ))...} #Tack on the std
 # Define the default value when no data is passed
 allData = [experiment[2] for experiment in Problem.Data]
 defaults = (x = allData,)
